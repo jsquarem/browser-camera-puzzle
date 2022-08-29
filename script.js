@@ -34,12 +34,40 @@ function main() {
 function addEventListener() {
   CANVAS.addEventListener('mousedown', onMouseDown);
   CANVAS.addEventListener('mousemove', onMouseMove);
-  CANVAS.addEventListener('mousedown', onMouseMove);
+  CANVAS.addEventListener('mouseup', onMouseUp);
+  CANVAS.addEventListener('touchstart', onTouchStart);
+  CANVAS.addEventListener('touchmove', onTouchMove);
+  CANVAS.addEventListener('touchend', onTouchEnd);
+}
+
+function onTouchStart(event) {
+  let location = {
+    x: event.touches[0].clientX,
+    y: event.touches[0].clientY,
+  };
+  onMouseDown(location);
+}
+
+function onTouchMove(event) {
+  let location = {
+    x: event.touches[0].clientX,
+    y: event.touches[0].clientY,
+  };
+  onMouseMove(location);
+}
+
+function onTouchEnd() {
+  onMouseUp(location);
 }
 
 function onMouseDown(event) {
   SELECTED_PIECE = getPressedPiece(event);
   if (SELECTED_PIECE != null) {
+    const index = PIECES.indexOf(SELECTED_PIECE);
+    if (index > -1) {
+      PIECES.splice(index, 1);
+      PIECES.push(SELECTED_PIECE);
+    }
     SELECTED_PIECE.offset = {
       x: event.x - SELECTED_PIECE.x,
       y: event.y - SELECTED_PIECE.y,
@@ -54,8 +82,25 @@ function onMouseMove(event) {
   }
 }
 
-function onMouseUp(event) {
-  // TODO
+function onMouseUp() {
+  if (SELECTED_PIECE.isClose()) {
+    SELECTED_PIECE.snap();
+  }
+  SELECTED_PIECE = null;
+}
+
+function getPressedPiece(location) {
+  for (let i = PIECES.length - 1; i >= 0; i--) {
+    if (
+      location.x > PIECES[i].x &&
+      location.x < PIECES[i].x + PIECES[i].width &&
+      location.y > PIECES[i].y &&
+      location.y < PIECES[i].y + PIECES[i].height
+    ) {
+      return PIECES[i];
+    }
+  }
+  return null;
 }
 
 function handleResize() {
@@ -119,10 +164,11 @@ class Piece {
     this.y = SIZE.y + (SIZE.height * this.rowIndex) / SIZE.rows;
     this.width = SIZE.width / SIZE.columns;
     this.height = SIZE.height / SIZE.rows;
+    this.xCorrect = this.x;
+    this.yCorrect = this.y;
   }
   draw(context) {
     context.beginPath();
-
     context.drawImage(
       VIDEO,
       (this.columnIndex * VIDEO.videoWidth) / SIZE.columns,
@@ -138,4 +184,26 @@ class Piece {
     context.rect(this.x, this.y, this.width, this.height);
     context.stroke();
   }
+  isClose() {
+    if (
+      distance(
+        { x: this.x, y: this.y },
+        { x: this.xCorrect, y: this.yCorrect }
+      ) <
+      this.width / 3
+    ) {
+      return true;
+    }
+    return false;
+  }
+  snap() {
+    this.x = this.xCorrect;
+    this.y = this.yCorrect;
+  }
+}
+
+function distance(p1, p2) {
+  return Math.sqrt(
+    (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
+  );
 }
