@@ -55,7 +55,7 @@ function onMouseMove(event) {
 }
 
 function onMouseUp(event) {
-  // TO-DO
+  // TODO
 }
 
 function handleResize() {
