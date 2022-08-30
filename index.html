@@ -10,5 +10,20 @@
   </head>
   <body onload="main()">
     <canvas id="myCanvas"></canvas>
+    <div id="menuItems">
+      <div id="controls">
+        Difficulty
+        <br />
+        <select onChange="setDifficulty()" id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+          <option value="insane">Insane</option>
+        </select>
+        <br />
+        <button onclick="restart()">Start</button>
+      </div>
+    </div>
+    <div id="time"></div>
   </body>
 </html>
